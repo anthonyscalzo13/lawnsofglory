@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lawns of Glory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0A0C08;
+      --green:   #3D7A1F;
+      --green-lt:#5FA832;
+      --gold:    #C8952A;
+      --gold-lt: #E8B84B;
+      --cream:   #F2EDD7;
+      --white:   #FFFFFF;
+      --olive:   #4A5240;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui:      'Barlow Condensed', sans-serif;
+      --font-body:    'Barlow', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--cream);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 3rem;
+      height: 64px;
+      background: rgba(10,12,8,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(200,149,42,0.18);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 0.06em;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--white); }
+
+    .nav-links {
+      display: flex; gap: 2.5rem; list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--gold); }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--black) !important;
+      padding: 8px 20px;
+      border-radius: 2px;
+      transition: background 0.2s !important;
+    }
+
+    .nav-cta:hover { background: var(--gold-lt) !important; color: var(--black) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 100px 3rem 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* textured grid background */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(61,122,31,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(61,122,31,0.07) 1px, transparent 1px);
+      background-size: 48px 48px;
+      z-index: 0;
+    }
+
+    /* diagonal green slash accent */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -10%; right: -5%;
+      width: 55%; height: 120%;
+      background: linear-gradient(165deg, rgba(61,122,31,0.18) 0%, transparent 60%);
+      transform: skewX(-8deg);
+      z-index: 0;
+    }
+
+    .hero-inner { position: relative; z-index: 1; max-width: 1100px; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(200,149,42,0.4);
+      padding: 6px 14px;
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--green-lt);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+    .hero-headline {
+      font-family: var(--font-display);
+      font-size: clamp(5rem, 12vw, 10rem);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-headline .hl-green { color: var(--green-lt); }
+    .hero-headline .hl-gold  { color: var(--gold); }
+
+    .hero-sub {
+      margin-top: 1.8rem;
+      font-size: 1.15rem;
+      color: rgba(242,237,215,0.7);
+      max-width: 540px;
+      line-height: 1.65;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      margin-top: 2.4rem;
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .btn-primary {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: var(--black);
+      padding: 14px 34px;
+      border: none; border-radius: 2px;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+
+    .btn-primary:hover { background: var(--gold-lt); transform: translateY(-2px); }
+
+    .btn-outline {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--cream);
+      padding: 14px 34px;
+      border: 1px solid rgba(242,237,215,0.35);
+      border-radius: 2px;
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+
+    /* hero stats row */
+    .hero-stats {
+      display: flex; gap: 3rem; margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(242,237,215,0.12);
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(242,237,215,0.5);
+      margin-top: 4px;
+    }
+
+    /* hero right graphic: big rotated text */
+    .hero-side-text {
+      position: absolute;
+      right: -2rem; top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      transform-origin: center center;
+      font-family: var(--font-display);
+      font-size: 9rem;
+      color: rgba(61,122,31,0.07);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ── RIBBON ── */
+    .ribbon {
+      background: var(--green);
+      padding: 14px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      border-top: 2px solid var(--gold);
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .ribbon-track {
+      display: inline-flex; gap: 0;
+      animation: marquee 22s linear infinite;
+    }
+
+    .ribbon-item {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cream);
+      padding: 0 2.5rem;
+    }
+
+    .ribbon-item::after {
+      content: '✦';
+      margin-left: 2.5rem;
+      color: var(--gold);
+      font-size: 0.6rem;
+    }
+
+    @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+
+    /* ── SECTIONS ── */
+    section { padding: 100px 3rem; }
+
+    .section-label {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1; max-width: 48px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.5;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── SERVICES ── */
+    #services { background: #0D0F0B; }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2px;
+      margin-top: 3.5rem;
+    }
+
+    .service-card {
+      background: #111408;
+      padding: 2.5rem 2rem;
+      border: 1px solid rgba(61,122,31,0.15);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      cursor: default;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--green);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .service-card:hover { border-color: rgba(61,122,31,0.5); transform: translateY(-4px); }
+    .service-card:hover::before { transform: scaleX(1); }
+
+    .service-num {
+      font-family: var(--font-display);
+      font-size: 4rem;
+      color: rgba(200,149,42,0.12);
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    .service-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .service-title {
+      font-family: var(--font-ui);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 0.75rem;
+    }
+
+    .service-desc {
+      font-size: 0.95rem;
+      color: rgba(242,237,215,0.55);
+      line-height: 1.7;
+    }
+
+    /* ── AI TOOL ── */
+    #ai-tool {
+      background: var(--black);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    @media(max-width:768px) { #ai-tool { grid-template-columns: 1fr; gap: 2.5rem; } }
+
+    .ai-mockup {
+      background: #111408;
+      border: 1px solid rgba(61,122,31,0.3);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    }
+
+    .mockup-bar {
+      background: #0D0F0B;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid rgba(61,122,31,0.15);
+    }
+
+    .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    .mockup-body { padding: 1.5rem; }
+
+    .score-display {
+      display: flex; align-items: center; gap: 1.5rem;
+      padding: 1.25rem;
+      background: rgba(61,122,31,0.1);
+      border: 1px solid rgba(61,122,31,0.25);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    .score-circle {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      border: 3px solid var(--green-lt);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .score-num {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--green-lt);
+    }
+
+    .score-label {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(242,237,215,0.5);
+      margin-bottom: 4px;
+    }
+
+    .score-title {
+      font-family: var(--font-ui);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .finding-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(242,237,215,0.06);
+      font-size: 0.88rem;
+      color: rgba(242,237,215,0.65);
+    }
+
+    .finding-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+    .rec-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .rec-chip {
+      background: rgba(200,149,42,0.12);
+      border: 1px solid rgba(200,149,42,0.3);
+      color: var(--gold-lt);
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 2px;
+    }
+
+    /* ── ABOUT ── */
+    #about {
+      background: #0D0F0B;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    @media(max-width:768px) { #about { grid-template-columns: 1fr; gap: 2.5rem; } }
+
+    .about-photo-wrap {
+      position: relative;
+    }
+
+    .about-photo-box {
+      width: 100%;
+      aspect-ratio: 4/5;
+      background: linear-gradient(145deg, rgba(61,122,31,0.2), rgba(10,12,8,0.8));
+      border: 1px solid rgba(61,122,31,0.25);
+      border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 6rem;
+      color: rgba(61,122,31,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .about-photo-box::after {
+      content: 'ANTHONY';
+      position: absolute;
+      bottom: 1.5rem; left: 1.5rem;
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      color: rgba(242,237,215,0.08);
+      letter-spacing: 0.04em;
+    }
+
+    .about-accent {
+      position: absolute;
+      bottom: -16px; right: -16px;
+      width: 120px; height: 120px;
+      border: 2px solid var(--gold);
+      border-radius: 2px;
+      z-index: -1;
+    }
+
+    .about-body { }
+
+    .about-intro {
+      font-size: 1.05rem;
+      color: rgba(242,237,215,0.65);
+      line-height: 1.75;
+      margin-bottom: 1.75rem;
+    }
+
+    .tags {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 2rem;
+    }
+
+    .tag {
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 2px;
+    }
+
+    .tag-green {
+      background: rgba(61,122,31,0.15);
+      border: 1px solid rgba(61,122,31,0.35);
+      color: var(--green-lt);
+    }
+
+    .tag-gold {
+      background: rgba(200,149,42,0.12);
+      border: 1px solid rgba(200,149,42,0.3);
+      color: var(--gold-lt);
+    }
+
+    /* ── TESTIMONIALS ── */
+    #testimonials { background: var(--black); }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .testimonial-card {
+      background: #0D0F0B;
+      border: 1px solid rgba(61,122,31,0.15);
+      padding: 2rem;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .testimonial-card::before {
+      content: '"';
+      position: absolute;
+      top: 1rem; right: 1.5rem;
+      font-family: var(--font-display);
+      font-size: 5rem;
+      color: rgba(200,149,42,0.12);
+      line-height: 1;
+    }
+
+    .testimonial-text {
+      font-size: 0.98rem;
+      color: rgba(242,237,215,0.7);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .testimonial-author {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .testimonial-location {
+      font-size: 0.8rem;
+      color: rgba(242,237,215,0.35);
+      margin-top: 2px;
+    }
+
+    /* ── CTA BANNER ── */
+    #cta {
+      background: var(--green);
+      padding: 80px 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #cta::before {
+      content: 'GLORY';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-display);
+      font-size: 20rem;
+      color: rgba(0,0,0,0.12);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #cta .section-title { color: var(--white); position: relative; }
+
+    #cta p {
+      font-size: 1.1rem;
+      color: rgba(242,237,215,0.8);
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+      position: relative;
+    }
+
+    #cta .btn-primary {
+      background: var(--black);
+      color: var(--gold);
+      position: relative;
+    }
+
+    #cta .btn-primary:hover { background: #1a1e16; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #050703;
+      padding: 3rem;
+      display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between;
+      gap: 1.5rem;
+      border-top: 1px solid rgba(200,149,42,0.18);
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--gold);
+    }
+
+    .footer-logo span { color: rgba(242,237,215,0.4); }
+
+    .footer-links {
+      display: flex; gap: 2rem; list-style: none;
+    }
+
+    .footer-links a {
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(242,237,215,0.4);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--gold); }
+
+    .footer-copy {
+      font-size: 0.8rem;
+      color: rgba(242,237,215,0.25);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE ── */
+    @media(max-width:640px) {
+      nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+      section { padding: 70px 1.25rem; }
+      .hero { padding: 90px 1.25rem 50px; }
+      .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+      #cta { padding: 60px 1.25rem; }
+      footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">Lawns<span>of</span>Glory</a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#ai-tool">AI Tool</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#cta" class="nav-cta">Get Started</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Now serving South Florida
+      </div>
+
+      <h1 class="hero-headline">
+        YOUR<br>
+        <span class="hl-green">LAWN.</span><br>
+        YOUR <span class="hl-gold">GLORY.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Precision lawn care powered by AI — detect weeds, score your lawn's health, and get expert recommendations. Built by a veteran who knows what discipline looks like.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#ai-tool" class="btn-primary">Analyze My Lawn Free</a>
+        <a href="#services" class="btn-outline">View Services</a>
+      </div>
+
+      <div class="hero-stats">
+        <div>
+          <div class="stat-val">98%</div>
+          <div class="stat-label">Satisfaction rate</div>
+        </div>
+        <div>
+          <div class="stat-val">500+</div>
+          <div class="stat-label">Lawns transformed</div>
+        </div>
+        <div>
+          <div class="stat-val">AI</div>
+          <div class="stat-label">Powered analysis</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-side-text">LAWNS OF GLORY</div>
+  </section>
+
+  <!-- RIBBON -->
+  <div class="ribbon" aria-hidden="true">
+    <div class="ribbon-track">
+      <span class="ribbon-item">Weed Detection</span>
+      <span class="ribbon-item">AI Health Scoring</span>
+      <span class="ribbon-item">Fertilizer Plans</span>
+      <span class="ribbon-item">Veteran Owned</span>
+      <span class="ribbon-item">South Florida</span>
+      <span class="ribbon-item">Weed Detection</span>
+      <span class="ribbon-item">AI Health Scoring</span>
+      <span class="ribbon-item">Fertilizer Plans</span>
+      <span class="ribbon-item">Veteran Owned</span>
+      <span class="ribbon-item">South Florida</span>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="section-label">What we do</div>
+    <h2 class="section-title">SERVICES<br>& SOLUTIONS</h2>
+
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-num">01</div>
+        <div class="service-title">AI Lawn Analysis</div>
+        <p class="service-desc">Upload a photo of your lawn and get an instant health score, weed density report, and green coverage percentage — all powered by advanced AI vision.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-num">02</div>
+        <div class="service-title">Fertilizer Planning</div>
+        <p class="service-desc">Stop guessing which fertilizer to use. Our AI reads your specific lawn conditions and recommends the right product, timing, and application rate.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-num">03</div>
+        <div class="service-title">Weed Identification</div>
+        <p class="service-desc">Identify weeds by type, understand how they spread, and get a targeted treatment plan before they take over your turf.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-num">04</div>
+        <div class="service-title">Health Tracking</div>
+        <p class="service-desc">Log your lawn's progress over time. Watch your health score climb as you follow the plan. Data-driven lawn care, military precision.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI TOOL -->
+  <section id="ai-tool">
+    <div class="reveal">
+      <div class="section-label">The tool</div>
+      <h2 class="section-title">LAWN<br>INTELLIGENCE</h2>
+      <p style="font-size:1.05rem;color:rgba(242,237,215,0.6);line-height:1.75;margin-bottom:2rem;max-width:460px;">
+        Drop a photo of your lawn. In seconds, our AI scores its health, flags weeds, and gives you a battle plan. No guesswork. No wasted product. Just results.
+      </p>
+      <a href="#cta" class="btn-primary">Try It Free</a>
+    </div>
+
+    <div class="ai-mockup reveal">
+      <div class="mockup-bar">
+        <div class="mockup-dot" style="background:#ff5f57"></div>
+        <div class="mockup-dot" style="background:#febc2e"></div>
+        <div class="mockup-dot" style="background:#28c840"></div>
+        <span style="font-family:var(--font-ui);font-size:0.78rem;color:rgba(242,237,215,0.3);margin-left:8px;letter-spacing:0.1em">lawnsofglory.com / analyze</span>
+      </div>
+      <div class="mockup-body">
+        <div class="score-display">
+          <div class="score-circle"><span class="score-num">84</span></div>
+          <div>
+            <div class="score-label">Overall health score</div>
+            <div class="score-title">Good — Minor issues detected</div>
+          </div>
+        </div>
+        <div class="finding-row"><span class="finding-icon">⚠️</span>Moderate broadleaf weed density in NW corner</div>
+        <div class="finding-row"><span class="finding-icon">✅</span>Strong green coverage — 82% of visible area</div>
+        <div class="finding-row"><span class="finding-icon">⚠️</span>Signs of mild nitrogen deficiency near edges</div>
+        <div class="finding-row" style="border:none"><span class="finding-icon">✅</span>No fungal disease patterns detected</div>
+        <div class="rec-chips">
+          <span class="rec-chip">Apply 28-0-3 fertilizer</span>
+          <span class="rec-chip">Spot treat weeds</span>
+          <span class="rec-chip">Water 3x weekly</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-photo-wrap reveal">
+      <div class="about-photo-box">🪖</div>
+      <div class="about-accent"></div>
+    </div>
+
+    <div class="about-body reveal">
+      <div class="section-label">The founder</div>
+      <h2 class="section-title">HI, I'M<br>ANTHONY.</h2>
+      <p class="about-intro">
+        Veteran. Product Manager. Lawn obsessive. I built Lawns of Glory because I was tired of generic advice that didn't account for South Florida's unique climate, soil, and grass types. So I built my own solution — AI-powered, data-driven, and actually useful.
+      </p>
+      <div class="tags">
+        <span class="tag tag-green">🇺🇸 U.S. Veteran</span>
+        <span class="tag tag-green">South Florida</span>
+        <span class="tag tag-gold">Product Manager</span>
+        <span class="tag tag-gold">AI Builder</span>
+      </div>
+      <a href="mailto:anthony@lawnsofglory.com" class="btn-outline">Get in Touch</a>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials">
+    <div class="section-label">Real results</div>
+    <h2 class="section-title reveal">WHAT PEOPLE<br>ARE SAYING</h2>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <p class="testimonial-text">The AI spotted a weed problem I'd been fighting for two years and told me exactly what to do. My lawn has never looked better.</p>
+        <div class="testimonial-author">Marcus T.</div>
+        <div class="testimonial-location">Pembroke Pines, FL</div>
+      </div>
+      <div class="testimonial-card reveal">
+        <p class="testimonial-text">Finally a lawn app that actually understands St. Augustine grass in Florida heat. The fertilizer recommendation was spot on.</p>
+        <div class="testimonial-author">Diana R.</div>
+        <div class="testimonial-location">Miramar, FL</div>
+      </div>
+      <div class="testimonial-card reveal">
+        <p class="testimonial-text">Anthony built something genuinely useful here. The health score went from 61 to 89 in two months just following the recommendations.</p>
+        <div class="testimonial-author">James K.</div>
+        <div class="testimonial-location">Fort Lauderdale, FL</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta">
+    <h2 class="section-title">READY TO<br>TAKE COMMAND?</h2>
+    <p>Upload your first lawn photo and get your free AI health report in under 30 seconds. No account needed.</p>
+    <a href="#ai-tool" class="btn-primary">Analyze My Lawn — Free</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">LawnsofGlory<span>.com</span></div>
+    <ul class="footer-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#ai-tool">AI Tool</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="mailto:anthony@lawnsofglory.com">Contact</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 Lawns of Glory. All rights reserved.</div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Smooth nav highlight
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 100) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current ? 'var(--gold)' : '';
+      });
+    });
+  </script>
+
+</body>
+</html>
