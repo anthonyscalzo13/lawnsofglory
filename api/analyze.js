@@ -1,5 +1,3 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -8,15 +6,12 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { name, email, zip, concern, images } = req.body;
+  const { name, zip, concern, images } = req.body;
 
   if (!zip) return res.status(400).json({ error: 'Zip code is required.' });
 
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'Server configuration error: missing API key.' });
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const hasImages = Array.isArray(images) && images.length > 0;
 
@@ -38,35 +33,28 @@ Respond ONLY with a valid JSON object — no markdown fences, no explanation out
 {
   "health_score": <integer 0-100>,
   "health_label": "<Poor|Fair|Good|Excellent>",
-  "grass_type": "<most likely grass species, e.g. St. Augustine, Bermuda, Zoysia, Fescue, Kentucky Bluegrass>",
+  "grass_type": "<most likely grass species>",
   "grass_confidence": "<Low|Medium|High>",
-  "summary": "<2-3 sentence plain-English assessment of overall lawn condition>",
+  "summary": "<2-3 sentence plain-English assessment>",
   "issues": [
-    { "icon": "<relevant emoji>", "title": "<short issue name>", "description": "<one sentence explanation>" }
+    { "icon": "<emoji>", "title": "<short issue name>", "description": "<one sentence>" }
   ],
   "recommendations": [
-    { "priority": "<Immediate|Soon|Seasonal>", "action": "<short imperative action>", "detail": "<1-2 sentence how-to or why>" }
+    { "priority": "<Immediate|Soon|Seasonal>", "action": "<short action>", "detail": "<1-2 sentences>" }
   ],
-  "seasonal_note": "<one sentence about what to focus on right now based on their region and the current season>",
-  "next_analysis": "<suggested timeframe for next photo submission, e.g. '4-6 weeks'>"
-}
+  "seasonal_note": "<one sentence about what to focus on right now based on their region>",
+  "next_analysis": "<suggested timeframe, e.g. 4-6 weeks>"
+}`;
 
-Rules:
-- health_score must reflect what is visible in photos (or estimated if no photos)
-- List 2-4 issues (skip if lawn looks healthy)
-- List 3-5 recommendations ordered by urgency
-- Be specific, practical, and encouraging`;
-
-  // Build Gemini content parts
+  // Build Gemini API request parts
   const parts = [];
 
-  // Add images first
   if (hasImages) {
     for (const img of images.slice(0, 5)) {
       if (img && img.data && img.mediaType) {
         parts.push({
-          inlineData: {
-            mimeType: img.mediaType,
+          inline_data: {
+            mime_type: img.mediaType,
             data: img.data,
           },
         });
@@ -74,17 +62,41 @@ Rules:
     }
   }
 
-  // Add text prompt
   parts.push({ text: prompt });
 
   try {
-    const result = await model.generateContent(parts);
-    const raw = result.response.text().trim();
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 1200,
+          },
+        }),
+      }
+    );
+
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      console.error('Gemini error:', errText);
+      return res.status(500).json({ error: 'AI analysis failed.', message: errText });
+    }
+
+    const geminiData = await geminiRes.json();
+    const raw = geminiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    if (!raw) {
+      return res.status(500).json({ error: 'No response from AI.' });
+    }
 
     let report;
     try {
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('No JSON found in response');
+      if (!jsonMatch) throw new Error('No JSON found');
       report = JSON.parse(jsonMatch[0]);
     } catch (parseErr) {
       console.error('Parse error:', parseErr, '\nRaw:', raw);
@@ -98,7 +110,7 @@ Rules:
     });
 
   } catch (err) {
-    console.error('Gemini API error:', err);
+    console.error('Fetch error:', err);
     return res.status(500).json({ error: 'AI analysis failed.', message: err.message });
   }
 };
