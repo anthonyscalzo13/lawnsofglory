@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
 
   if (!zip) return res.status(400).json({ error: 'Zip code is required.' });
 
-  const apiKey = process.env.GOOGLE_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'Server configuration error: missing API key.' });
 
   const hasImages = Array.isArray(images) && images.length > 0;
@@ -44,17 +44,25 @@ Respond ONLY with a valid JSON object — no markdown fences, no explanation out
   ],
   "seasonal_note": "<one sentence about what to focus on right now based on their region>",
   "next_analysis": "<suggested timeframe, e.g. 4-6 weeks>"
-}`;
+}
 
-  // Build Gemini API request parts
-  const parts = [];
+Rules:
+- health_score must reflect what is visible in photos (or estimated if no photos)
+- List 2-4 issues (skip if lawn looks healthy)
+- List 3-5 recommendations ordered by urgency
+- Be specific, practical, and encouraging`;
+
+  // Build Anthropic message content
+  const content = [];
 
   if (hasImages) {
     for (const img of images.slice(0, 5)) {
       if (img && img.data && img.mediaType) {
-        parts.push({
-          inline_data: {
-            mime_type: img.mediaType,
+        content.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: img.mediaType,
             data: img.data,
           },
         });
@@ -62,32 +70,31 @@ Respond ONLY with a valid JSON object — no markdown fences, no explanation out
     }
   }
 
-  parts.push({ text: prompt });
+  content.push({ type: 'text', text: prompt });
 
   try {
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 1200,
-          },
-        }),
-      }
-    );
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content }],
+      }),
+    });
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error('Gemini error:', errText);
+    if (!anthropicRes.ok) {
+      const errText = await anthropicRes.text();
+      console.error('Anthropic error:', errText);
       return res.status(500).json({ error: 'AI analysis failed.', message: errText });
     }
 
-    const geminiData = await geminiRes.json();
-    const raw = geminiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const anthropicData = await anthropicRes.json();
+    const raw = anthropicData.content?.[0]?.text?.trim();
 
     if (!raw) {
       return res.status(500).json({ error: 'No response from AI.' });
