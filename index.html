@@ -232,6 +232,7 @@
       text-transform: uppercase;
       text-decoration: none;
       transition: transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+      cursor: pointer;
     }
 
     .btn-primary {
@@ -241,6 +242,7 @@
     }
 
     .btn-primary:hover { background: var(--gold-lt); transform: translateY(-2px); }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
     .btn-outline {
       background: rgba(242,237,215,.03);
@@ -557,10 +559,76 @@
     }
 
     input:focus, textarea:focus { border-color: var(--gold); }
-    input[type="file"] { padding: .8rem; }
+    input[type="file"] { padding: .8rem; cursor: pointer; }
     textarea { min-height: 110px; resize: vertical; }
     .form-note { color: rgba(242,237,215,.45); font-size: .88rem; line-height: 1.55; margin-top: .8rem; }
-    button.btn-primary { cursor: pointer; width: 100%; margin-top: .25rem; }
+
+    /* File preview strip */
+    #preview-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: .6rem;
+    }
+    #preview-strip img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid rgba(200,149,42,.4);
+    }
+
+    /* Loading overlay */
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8,10,7,.92);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+    #loading-overlay.active { display: flex; }
+    .loader-ring {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 5px solid rgba(112,185,75,.2);
+      border-top-color: var(--green-lt);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold-lt);
+      font-size: 1rem;
+    }
+    .loader-sub {
+      color: var(--muted);
+      font-size: .9rem;
+      text-align: center;
+      max-width: 280px;
+    }
+
+    /* Error banner */
+    #form-error {
+      display: none;
+      background: rgba(180,40,40,.15);
+      border: 1px solid rgba(200,80,80,.4);
+      color: #f87171;
+      border-radius: 12px;
+      padding: .85rem 1rem;
+      margin-top: .75rem;
+      font-size: .9rem;
+    }
+    #form-error.active { display: block; }
+
+    button.btn-primary { cursor: pointer; width: 100%; margin-top: .25rem; border: none; }
 
     .included-list {
       display: grid;
@@ -599,7 +667,6 @@
       background: radial-gradient(circle at 50% 30%, rgba(200,149,42,.22), transparent 42%), rgba(0,0,0,.18);
       border: 1px solid rgba(242,237,215,.1);
     }
-
 
     .about-tags { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.4rem; }
     .tag {
@@ -676,6 +743,14 @@
   </style>
 </head>
 <body>
+
+  <!-- Loading overlay (shown while AI analyzes) -->
+  <div id="loading-overlay" role="status" aria-live="polite">
+    <div class="loader-ring"></div>
+    <div class="loader-text">Analyzing Your Lawn</div>
+    <div class="loader-sub">Our AI is reviewing your photos and location. This usually takes 15–30 seconds.</div>
+  </div>
+
   <nav>
     <a class="brand" href="#home" aria-label="Lawns of Glory home">
       <img class="brand-mark" src="log-icon.png" alt="Lawns of Glory shield logo">
@@ -773,42 +848,47 @@
       <div class="section-inner">
         <div class="section-label">Start here</div>
         <h2 class="section-title reveal">ANALYZE YOUR<br>LAWN FREE</h2>
-        <p class="section-copy reveal">This first version is intentionally simple. Submit your info and lawn photos, then use the output as your starting point for a better lawn.</p>
+        <p class="section-copy reveal">Submit your info and lawn photos. Our AI analyzes your grass type, location, and photos to deliver a personalized report in seconds.</p>
 
         <div class="analyze-grid">
-          <form class="form-card reveal" action="https://formspree.io/f/xlgkwjnq" method="POST" enctype="multipart/form-data">
-            <div class="field">
-              <label for="name">First Name</label>
-              <input id="name" name="name" type="text" placeholder="Anthony" required>
-            </div>
-            <div class="field">
-              <label for="email">Email</label>
-              <input id="email" name="email" type="email" placeholder="you@example.com" required>
-            </div>
-            <div class="field">
-              <label for="zip">Zip Code</label>
-              <input id="zip" name="zip" type="text" inputmode="numeric" placeholder="33467" required>
-            </div>
-            <div class="field">
-              <label for="photos">Upload Lawn Photos</label>
-              <input id="photos" name="attachment" type="file" accept="image/*" multiple>
-            </div>
-            <div class="field">
-              <label for="concern">What are you trying to fix?</label>
-              <textarea id="concern" name="concern" placeholder="Example: brown patches, weeds, thin areas, watering issues..."></textarea>
-            </div>
-            <button class="btn-primary" type="submit">Get My Lawn Report</button>
-          </form>
+          <div class="form-card reveal">
+            <form id="lawn-form" novalidate>
+              <div class="field">
+                <label for="name">First Name</label>
+                <input id="name" name="name" type="text" placeholder="Anthony" required>
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="you@example.com" required>
+              </div>
+              <div class="field">
+                <label for="zip">Zip Code</label>
+                <input id="zip" name="zip" type="text" inputmode="numeric" placeholder="33467" required>
+              </div>
+              <div class="field">
+                <label for="photos">Upload Lawn Photos (optional but recommended)</label>
+                <input id="photos" name="photos" type="file" accept="image/*" multiple>
+                <div id="preview-strip"></div>
+              </div>
+              <div class="field">
+                <label for="concern">What are you trying to fix?</label>
+                <textarea id="concern" name="concern" placeholder="Example: brown patches, weeds, thin areas, watering issues..."></textarea>
+              </div>
+              <div id="form-error"></div>
+              <button class="btn-primary" type="submit" id="submit-btn">Get My Lawn Report</button>
+              <p class="form-note" style="margin-top:.75rem;">Free · No account required · Report arrives in ~20 seconds</p>
+            </form>
+          </div>
 
           <div class="reveal">
             <h3 style="font-family:var(--font-display);font-size:3.2rem;line-height:.95;color:#fff;margin-bottom:1rem;">WHAT YOU'LL GET</h3>
-            <p class="section-copy">The first report should give homeowners enough value to take action immediately, even before they create an account.</p>
+            <p class="section-copy">The first report gives you enough to take action immediately — no account needed.</p>
             <ul class="included-list">
-              <li><strong>Lawn Health Score:</strong> A simple score that tells users where their lawn stands.</li>
-              <li><strong>Grass Type Estimate:</strong> A likely identification based on photo and location.</li>
+              <li><strong>Lawn Health Score:</strong> A simple 0–100 score that tells you exactly where your lawn stands.</li>
+              <li><strong>Grass Type Estimate:</strong> AI identification based on your photos and zip code.</li>
               <li><strong>Issue Summary:</strong> Plain-English explanation of weeds, stress, patches, or discoloration.</li>
-              <li><strong>Immediate Recommendations:</strong> Watering, fertilizer, weed treatment, and maintenance guidance.</li>
-              <li><strong>Next-Step CTA:</strong> Create an account later to track history, reminders, and progress.</li>
+              <li><strong>Immediate Recommendations:</strong> Watering, fertilizer, weed treatment, and maintenance steps.</li>
+              <li><strong>Seasonal Guidance:</strong> What to focus on right now based on your growing zone.</li>
             </ul>
           </div>
         </div>
@@ -866,16 +946,127 @@
   </footer>
 
   <script>
+    // ── Scroll reveal ──────────────────────────────────────────────────────────
     const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, index) => {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
         if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add('visible'), index * 70);
-          observer.unobserve(entry.target);
+          setTimeout(() => entry.target.classList.add('visible'), i * 70);
+          revealObserver.unobserve(entry.target);
         }
       });
     }, { threshold: 0.12 });
-    reveals.forEach(el => observer.observe(el));
+    reveals.forEach(el => revealObserver.observe(el));
+
+    // ── Image preview strip ────────────────────────────────────────────────────
+    const photosInput = document.getElementById('photos');
+    const previewStrip = document.getElementById('preview-strip');
+
+    photosInput.addEventListener('change', () => {
+      previewStrip.innerHTML = '';
+      Array.from(photosInput.files).forEach(file => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.alt = file.name;
+        previewStrip.appendChild(img);
+      });
+    });
+
+    // ── Image compression helper ───────────────────────────────────────────────
+    function compressImage(file, maxDim = 1024, quality = 0.82) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve({
+              data: dataUrl.split(',')[1],      // base64 only
+              mediaType: 'image/jpeg',
+            });
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ── Form submit ────────────────────────────────────────────────────────────
+    const form = document.getElementById('lawn-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const formError = document.getElementById('form-error');
+
+    function showError(msg) {
+      formError.textContent = msg;
+      formError.classList.add('active');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Get My Lawn Report';
+      loadingOverlay.classList.remove('active');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formError.classList.remove('active');
+
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const zip = form.zip.value.trim();
+      const concern = form.concern.value.trim();
+
+      if (!email || !zip) {
+        showError('Please enter your email and zip code.');
+        return;
+      }
+      if (!/^\d{5}$/.test(zip)) {
+        showError('Please enter a valid 5-digit US zip code.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Analyzing…';
+      loadingOverlay.classList.add('active');
+
+      // Compress images
+      let images = [];
+      if (photosInput.files.length > 0) {
+        const files = Array.from(photosInput.files).slice(0, 5); // max 5 photos
+        try {
+          images = await Promise.all(files.map(f => compressImage(f)));
+        } catch (imgErr) {
+          showError('Could not process one or more images. Please try again.');
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, zip, concern, images }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          showError(data.error || 'Analysis failed. Please try again.');
+          return;
+        }
+
+        // Store in sessionStorage and redirect to results page
+        sessionStorage.setItem('log_report', JSON.stringify(data));
+        window.location.href = '/report.html';
+
+      } catch (err) {
+        showError('Network error — please check your connection and try again.');
+        console.error(err);
+      }
+    });
   </script>
 </body>
 </html>

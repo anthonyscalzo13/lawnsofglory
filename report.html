@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Lawn Report | Lawns of Glory</title>
+  <meta name="description" content="Your personalized AI lawn health report from Lawns of Glory." />
+  <link rel="icon" type="image/png" href="log-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #080A07;
+      --card: #151A10;
+      --green: #123F22;
+      --green-2: #2F7A30;
+      --green-lt: #70B94B;
+      --gold: #C8952A;
+      --gold-lt: #E6BC54;
+      --cream: #F2EDD7;
+      --muted: rgba(242,237,215,.68);
+      --soft: rgba(242,237,215,.12);
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui: 'Barlow Condensed', sans-serif;
+      --font-body: 'Barlow', sans-serif;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--cream);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.25rem, 4vw, 3rem);
+      background: rgba(8,10,7,.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(200,149,42,.18);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 14px rgba(200,149,42,.22));
+    }
+
+    .brand-text {
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      letter-spacing: .06em;
+      color: var(--gold);
+    }
+
+    .brand-text span { color: var(--cream); }
+
+    .nav-back {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: .85rem;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: rgba(242,237,215,.65);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: color .2s;
+    }
+
+    .nav-back:hover { color: var(--gold-lt); }
+
+    /* ── Page layout ────────────────────────────────────────── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 104px clamp(1.25rem, 4vw, 2rem) 80px;
+    }
+
+    /* ── Report header ──────────────────────────────────────── */
+    .report-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .report-header .eyebrow {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: .82rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--gold-lt);
+      margin-bottom: .75rem;
+    }
+
+    .report-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3.2rem, 8vw, 6rem);
+      line-height: .92;
+      letter-spacing: .02em;
+      color: #fff;
+      margin-bottom: .5rem;
+    }
+
+    .report-header .meta {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    /* ── Score hero ─────────────────────────────────────────── */
+    .score-hero {
+      background: linear-gradient(145deg, rgba(18,63,34,.7), rgba(12,18,10,.8));
+      border: 1px solid rgba(112,185,75,.32);
+      border-radius: 24px;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 15% 50%, rgba(112,185,75,.12), transparent 55%);
+      pointer-events: none;
+    }
+
+    .score-ring {
+      flex: 0 0 auto;
+      position: relative;
+      width: 130px;
+      height: 130px;
+    }
+
+    .score-ring svg {
+      width: 130px;
+      height: 130px;
+      transform: rotate(-90deg);
+    }
+
+    .score-ring .track {
+      fill: none;
+      stroke: rgba(112,185,75,.18);
+      stroke-width: 9;
+    }
+
+    .score-ring .progress {
+      fill: none;
+      stroke: var(--green-lt);
+      stroke-width: 9;
+      stroke-linecap: round;
+      stroke-dasharray: 345.6;
+      stroke-dashoffset: 345.6;
+      transition: stroke-dashoffset 1.4s cubic-bezier(0.34,1.1,0.64,1);
+    }
+
+    .score-ring-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-ring-num .num {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      color: var(--green-lt);
+      line-height: 1;
+    }
+
+    .score-ring-num .den {
+      font-family: var(--font-ui);
+      font-size: .72rem;
+      font-weight: 700;
+      color: rgba(242,237,215,.38);
+      letter-spacing: .1em;
+    }
+
+    .score-info { flex: 1; }
+
+    .score-label-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: .82rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--green-lt);
+      border: 1px solid rgba(112,185,75,.38);
+      background: rgba(112,185,75,.1);
+      padding: .4rem .7rem;
+      border-radius: 999px;
+      margin-bottom: .75rem;
+    }
+
+    .score-label-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-lt);
+      box-shadow: 0 0 10px rgba(112,185,75,.8);
+    }
+
+    .score-info h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #fff;
+      line-height: 1;
+      margin-bottom: .65rem;
+    }
+
+    .score-info p {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: .97rem;
+    }
+
+    .grass-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: .85rem;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: .85rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gold-lt);
+      border: 1px solid rgba(200,149,42,.35);
+      background: rgba(200,149,42,.1);
+      padding: .45rem .75rem;
+      border-radius: 999px;
+    }
+
+    /* ── Section blocks ─────────────────────────────────────── */
+    .report-section {
+      background: var(--card);
+      border: 1px solid rgba(61,122,31,.2);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .rs-title {
+      font-family: var(--font-ui);
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold-lt);
+      margin-bottom: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .rs-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(200,149,42,.22);
+    }
+
+    /* Issues */
+    .issue-row {
+      display: flex;
+      gap: .85rem;
+      padding: .9rem 0;
+      border-bottom: 1px solid rgba(242,237,215,.07);
+      align-items: flex-start;
+    }
+
+    .issue-row:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .issue-icon {
+      font-size: 1.5rem;
+      flex: 0 0 auto;
+      line-height: 1;
+    }
+
+    .issue-body h4 {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: .2rem;
+    }
+
+    .issue-body p { color: var(--muted); line-height: 1.55; font-size: .94rem; }
+
+    /* Recommendations */
+    .rec-row {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(242,237,215,.07);
+      align-items: flex-start;
+    }
+
+    .rec-row:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .priority-badge {
+      font-family: var(--font-ui);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: .3rem .55rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex: 0 0 auto;
+      margin-top: .1rem;
+    }
+
+    .priority-Immediate { background: rgba(220,50,50,.18); color: #f87171; border: 1px solid rgba(220,50,50,.35); }
+    .priority-Soon      { background: rgba(200,149,42,.15); color: var(--gold-lt); border: 1px solid rgba(200,149,42,.35); }
+    .priority-Seasonal  { background: rgba(112,185,75,.12); color: var(--green-lt); border: 1px solid rgba(112,185,75,.32); }
+
+    .rec-body h4 {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: .2rem;
+    }
+
+    .rec-body p { color: var(--muted); line-height: 1.55; font-size: .94rem; }
+
+    /* Seasonal note */
+    .seasonal-box {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: rgba(200,149,42,.07);
+      border: 1px solid rgba(200,149,42,.22);
+      border-radius: 16px;
+      padding: 1.1rem 1.2rem;
+    }
+
+    .seasonal-box .season-icon { font-size: 1.6rem; flex: 0 0 auto; }
+    .seasonal-box p { color: var(--muted); line-height: 1.6; font-size: .96rem; }
+    .seasonal-box strong { color: var(--gold-lt); }
+
+    /* ── CTA ────────────────────────────────────────────────── */
+    .report-cta {
+      background: linear-gradient(145deg, rgba(18,63,34,.8), rgba(12,20,10,.9));
+      border: 1px solid rgba(112,185,75,.28);
+      border-radius: 22px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .report-cta h3 {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      color: #fff;
+      line-height: 1;
+      margin-bottom: .65rem;
+    }
+
+    .report-cta p { color: var(--muted); line-height: 1.6; max-width: 520px; margin: 0 auto 1.5rem; }
+
+    .cta-buttons { display: flex; gap: .85rem; justify-content: center; flex-wrap: wrap; }
+
+    .btn-primary, .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: .8rem 1.3rem;
+      border-radius: 999px;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: .95rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: transform .18s ease, background .18s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary { background: var(--gold); color: var(--black); border: none; }
+    .btn-primary:hover { background: var(--gold-lt); transform: translateY(-2px); }
+
+    .btn-outline { background: transparent; color: var(--cream); border: 1px solid rgba(242,237,215,.28); }
+    .btn-outline:hover { border-color: var(--gold-lt); color: var(--gold-lt); transform: translateY(-2px); }
+
+    /* ── Next analysis chip ─────────────────────────────────── */
+    .next-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: .8rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(242,237,215,.48);
+      border: 1px solid rgba(242,237,215,.1);
+      background: rgba(255,255,255,.03);
+      padding: .4rem .7rem;
+      border-radius: 999px;
+      margin-top: 1.2rem;
+    }
+
+    /* ── No-data state ──────────────────────────────────────── */
+    .no-data {
+      text-align: center;
+      padding: 5rem 1.5rem;
+    }
+
+    .no-data h2 {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      color: var(--gold-lt);
+      margin-bottom: .75rem;
+    }
+
+    .no-data p { color: var(--muted); margin-bottom: 1.5rem; }
+
+    /* Fade in */
+    .fade-in { opacity: 0; transform: translateY(18px); animation: fadeUp .6s ease forwards; }
+    .fade-in:nth-child(2) { animation-delay: .1s; }
+    .fade-in:nth-child(3) { animation-delay: .2s; }
+    .fade-in:nth-child(4) { animation-delay: .28s; }
+    .fade-in:nth-child(5) { animation-delay: .36s; }
+    .fade-in:nth-child(6) { animation-delay: .44s; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    footer {
+      background: #050703;
+      padding: 1.5rem clamp(1.25rem, 4vw, 3rem);
+      border-top: 1px solid rgba(200,149,42,.15);
+      text-align: center;
+      color: rgba(242,237,215,.3);
+      font-size: .85rem;
+    }
+
+    @media (max-width: 600px) {
+      .score-hero { flex-direction: column; align-items: flex-start; }
+      .score-ring { width: 110px; height: 110px; }
+      .score-ring svg { width: 110px; height: 110px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="brand" href="/" aria-label="Lawns of Glory home">
+      <img class="brand-mark" src="log-icon.png" alt="Lawns of Glory shield logo">
+      <span class="brand-text">Lawns<span>of</span>Glory</span>
+    </a>
+    <a class="nav-back" href="/">← Analyze Another Lawn</a>
+  </nav>
+
+  <div class="page" id="page-content">
+    <div class="no-data">
+      <h2>No Report Found</h2>
+      <p>Looks like you arrived here directly. Submit your lawn photos on the home page to get your report.</p>
+      <a href="/" class="btn-primary">Analyze My Lawn</a>
+    </div>
+  </div>
+
+  <footer>© 2026 Lawns of Glory · Your Journey To A Lawn Of Glory.</footer>
+
+  <script>
+    const stored = sessionStorage.getItem('log_report');
+    if (!stored) {
+      // keep the no-data state shown
+    } else {
+      const data = JSON.parse(stored);
+      const { report, meta } = data;
+      const name = meta?.name || 'Homeowner';
+      const zip = meta?.zip || '';
+      const analyzedAt = meta?.analyzedAt
+        ? new Date(meta.analyzedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        : '';
+
+      // Score ring math: circumference = 2 * π * 55 ≈ 345.6
+      const score = Math.min(100, Math.max(0, report.health_score || 0));
+      const circum = 345.6;
+      const offset = circum - (score / 100) * circum;
+
+      // Priority label color class
+      const priorityClass = (p) => {
+        if (!p) return 'priority-Soon';
+        const k = p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
+        return `priority-${k}`;
+      };
+
+      // Build issues HTML
+      const issuesHTML = (report.issues || []).map(issue => `
+        <div class="issue-row">
+          <div class="issue-icon">${issue.icon || '⚠️'}</div>
+          <div class="issue-body">
+            <h4>${escHtml(issue.title || '')}</h4>
+            <p>${escHtml(issue.description || '')}</p>
+          </div>
+        </div>
+      `).join('') || '<p style="color:var(--muted)">No major issues detected — great work!</p>';
+
+      // Build recommendations HTML
+      const recsHTML = (report.recommendations || []).map(rec => `
+        <div class="rec-row">
+          <span class="priority-badge ${priorityClass(rec.priority)}">${escHtml(rec.priority || 'Soon')}</span>
+          <div class="rec-body">
+            <h4>${escHtml(rec.action || '')}</h4>
+            <p>${escHtml(rec.detail || '')}</p>
+          </div>
+        </div>
+      `).join('');
+
+      const confidenceText = report.grass_confidence
+        ? `(${report.grass_confidence} confidence)`
+        : '';
+
+      const nextAnalysis = report.next_analysis || '4–6 weeks';
+
+      document.getElementById('page-content').innerHTML = `
+        <div class="report-header fade-in">
+          <div class="eyebrow">Lawn of Glory · AI Report</div>
+          <h1>${escHtml(name)}'s<br>Lawn Report</h1>
+          <p class="meta">ZIP Code ${escHtml(zip)}${analyzedAt ? ' · ' + analyzedAt : ''}</p>
+        </div>
+
+        <div class="score-hero fade-in">
+          <div class="score-ring">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <circle class="track" cx="60" cy="60" r="55"/>
+              <circle class="progress" id="score-arc" cx="60" cy="60" r="55"/>
+            </svg>
+            <div class="score-ring-num">
+              <span class="num" id="score-num">0</span>
+              <span class="den">/100</span>
+            </div>
+          </div>
+          <div class="score-info">
+            <div class="score-label-pill"><span class="dot"></span>${escHtml(report.health_label || 'Good')}</div>
+            <h2>${escHtml(report.health_label || 'Good')}</h2>
+            <p>${escHtml(report.summary || '')}</p>
+            <div class="grass-tag">🌿 ${escHtml(report.grass_type || 'Unknown grass type')} ${confidenceText}</div>
+          </div>
+        </div>
+
+        ${(report.issues && report.issues.length > 0) ? `
+        <div class="report-section fade-in">
+          <div class="rs-title">Areas to Watch</div>
+          ${issuesHTML}
+        </div>` : ''}
+
+        <div class="report-section fade-in">
+          <div class="rs-title">Your Action Plan</div>
+          ${recsHTML}
+        </div>
+
+        ${report.seasonal_note ? `
+        <div class="report-section fade-in">
+          <div class="rs-title">Seasonal Note</div>
+          <div class="seasonal-box">
+            <span class="season-icon">☀️</span>
+            <p>${escHtml(report.seasonal_note)}</p>
+          </div>
+        </div>` : ''}
+
+        <div class="report-cta fade-in">
+          <h3>KEEP YOUR LAWN<br>ON THE RISE</h3>
+          <p>Track your progress, get seasonal reminders, and watch your lawn's score climb over time. The dashboard is coming soon.</p>
+          <div class="cta-buttons">
+            <a href="/" class="btn-primary">Analyze Another Lawn</a>
+            <a href="/#future" class="btn-outline">See What's Coming</a>
+          </div>
+          <div>
+            <span class="next-chip">📅 Suggested next analysis: ${escHtml(nextAnalysis)}</span>
+          </div>
+        </div>
+      `;
+
+      // Animate score ring & counter
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const arc = document.getElementById('score-arc');
+          const numEl = document.getElementById('score-num');
+          if (arc) arc.style.strokeDashoffset = offset;
+
+          // Count-up animation
+          let current = 0;
+          const step = score / 60;
+          const ticker = setInterval(() => {
+            current = Math.min(score, current + step);
+            numEl.textContent = Math.round(current);
+            if (current >= score) clearInterval(ticker);
+          }, 16);
+        }, 200);
+      });
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
