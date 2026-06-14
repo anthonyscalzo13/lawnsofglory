@@ -2,9 +2,6 @@
   "name": "lawns-of-glory",
   "version": "1.0.0",
   "description": "AI-powered lawn health analysis",
-  "dependencies": {
-    "@google/generative-ai": "^0.21.0"
-  },
   "engines": {
     "node": ">=18"
   }
