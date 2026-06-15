@@ -1,6 +1,11 @@
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 
 const DAILY_LIMIT = 5;
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,9 +20,9 @@ module.exports = async function handler(req, res) {
   const rateKey = `analyze:${ip}:${today}`;
 
   try {
-    const count = await kv.incr(rateKey);
+    const count = await redis.incr(rateKey);
     if (count === 1) {
-      await kv.expire(rateKey, 60 * 60 * 24);
+      await redis.expire(rateKey, 60 * 60 * 24);
     }
     if (count > DAILY_LIMIT) {
       return res.status(429).json({
