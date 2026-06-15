@@ -1,3 +1,7 @@
+const { kv } = require('@vercel/kv');
+
+const DAILY_LIMIT = 5;
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -5,6 +9,24 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+  const today = new Date().toISOString().slice(0, 10);
+  const rateKey = `analyze:${ip}:${today}`;
+
+  try {
+    const count = await kv.incr(rateKey);
+    if (count === 1) {
+      await kv.expire(rateKey, 60 * 60 * 24);
+    }
+    if (count > DAILY_LIMIT) {
+      return res.status(429).json({
+        error: `Daily limit reached. You can run up to ${DAILY_LIMIT} lawn analyses per day. Please try again tomorrow.`,
+      });
+    }
+  } catch (err) {
+    console.error('Rate limit check failed:', err);
+  }
 
   const { name, zip, concern, images } = req.body;
 

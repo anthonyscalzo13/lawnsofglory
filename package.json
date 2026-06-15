@@ -4,5 +4,8 @@
   "description": "AI-powered lawn health analysis",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@vercel/kv": "^2.0.0"
   }
 }
