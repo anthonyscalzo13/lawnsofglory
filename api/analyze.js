@@ -14,6 +14,8 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    // Feature temporarily disabled by request to avoid unexpected API costs (Sept 2026)
+    return res.status(503).json({ error: 'Lawn analysis is temporarily disabled. Please check back soon.' });
 
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
   const today = new Date().toISOString().slice(0, 10);
